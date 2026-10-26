@@ -1,0 +1,132 @@
+@prefix :     <http://www.example.org/skyrim#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+<http://www.example.org/skyrim> a owl:Ontology .
+
+#################### Классы (факты с одним аргументом) ####################
+
+:Race          a owl:Class .
+:RaceGroup     a owl:Class .
+:CreatureType  a owl:Class .
+:Character     a owl:Class .
+:Faction       a owl:Class .
+:Shout         a owl:Class .
+:Dovahkiin     a owl:Class ; rdfs:subClassOf :Character .
+
+[] a owl:AllDisjointClasses ;
+   owl:members ( :Race :RaceGroup :CreatureType :Character :Faction :Shout ) .
+
+#################### Свойства (факты с двумя аргументами) ####################
+
+:race_group  a owl:ObjectProperty ; rdfs:domain :Race      ; rdfs:range :RaceGroup .
+:race_of     a owl:ObjectProperty ; rdfs:domain :Character ; rdfs:range :Race .
+:creature_of a owl:ObjectProperty ; rdfs:domain :Character ; rdfs:range :CreatureType ;
+             rdfs:subPropertyOf :creature_kind .
+:member_of   a owl:ObjectProperty ; rdfs:domain :Character ; rdfs:range :Faction ;
+             rdfs:subPropertyOf :in_faction .
+:leader_of   a owl:ObjectProperty ; rdfs:domain :Character ; rdfs:range :Faction ;
+             rdfs:subPropertyOf :in_faction .
+:at_war      a owl:ObjectProperty , owl:SymmetricProperty ;
+             rdfs:domain :Faction ; rdfs:range :Faction .
+:knows_shout a owl:ObjectProperty ; rdfs:domain :Character ; rdfs:range :Shout .
+:taught      a owl:ObjectProperty ; rdfs:domain :Character ; rdfs:range :Character ;
+             rdfs:subPropertyOf :voice_lineage .
+
+#################### Правила ####################
+
+# creature_kind: creature_of ИЛИ (есть раса -> living)
+:creature_kind a owl:ObjectProperty , owl:FunctionalProperty ;
+    rdfs:domain :Character ; rdfs:range :CreatureType .
+
+[ a owl:Restriction ; owl:onProperty :race_of ; owl:someValuesFrom :Race ]
+    rdfs:subClassOf [ a owl:Restriction ; owl:onProperty :creature_kind ; owl:hasValue :living ] .
+
+# in_group: race_of -> race_group
+:in_group a owl:ObjectProperty ;
+    owl:propertyChainAxiom ( :race_of :race_group ) .
+
+# in_faction: member_of ИЛИ leader_of
+:in_faction a owl:ObjectProperty .
+:has_member a owl:ObjectProperty ; owl:inverseOf :in_faction .
+
+# enemies: in_faction -> at_war -> участник другой фракции
+:enemies a owl:ObjectProperty ;
+    owl:propertyChainAxiom ( :in_faction :at_war :has_member ) .
+
+# voice_lineage: рекурсия = транзитивность
+:voice_lineage a owl:ObjectProperty , owl:TransitiveProperty .
+
+# can_defeat_dragon: знает dragonrend И НЕ дракон
+:DragonSlayer a owl:Class ;
+    owl:equivalentClass [ a owl:Class ; owl:intersectionOf (
+        [ a owl:Restriction ; owl:onProperty :knows_shout ; owl:hasValue :dragonrend ]
+        [ a owl:Class ; owl:complementOf
+            [ a owl:Restriction ; owl:onProperty :creature_kind ; owl:hasValue :dragon ] ]
+    ) ] .
+
+#################### Индивиды ####################
+
+:nord     a :Race ; :race_group :human .
+:imperial a :Race ; :race_group :human .
+:breton   a :Race ; :race_group :human .
+:redguard a :Race ; :race_group :human .
+:altmer   a :Race ; :race_group :mer .
+:dunmer   a :Race ; :race_group :mer .
+:bosmer   a :Race ; :race_group :mer .
+:orsimer  a :Race ; :race_group :mer .
+:khajiit  a :Race ; :race_group :beast .
+:argonian a :Race ; :race_group :beast .
+
+:human a :RaceGroup .
+:mer   a :RaceGroup .
+:beast a :RaceGroup .
+
+:living    a :CreatureType .
+:dragon    a :CreatureType .
+:undead    a :CreatureType .
+:daedra    a :CreatureType .
+:automaton a :CreatureType .
+
+:stormcloaks     a :Faction ; :at_war :imperial_legion .
+:imperial_legion a :Faction .
+:blades          a :Faction .
+:greybeards      a :Faction .
+
+:unrelenting_force a :Shout .
+:fire_breath       a :Shout .
+:dragonrend        a :Shout .
+:whirlwind_sprint  a :Shout .
+
+:ulfric     a :Character ; :race_of :nord ; :leader_of :stormcloaks ;
+            :knows_shout :unrelenting_force .
+:galmar     a :Character ; :race_of :nord ; :member_of :stormcloaks .
+:tullius    a :Character ; :race_of :imperial ; :leader_of :imperial_legion .
+:rikke      a :Character ; :race_of :nord ; :member_of :imperial_legion .
+:delphine   a :Character ; :race_of :breton ; :member_of :blades .
+:esbern     a :Character ; :race_of :nord ; :member_of :blades .
+:arngeir    a :Character ; :race_of :nord ; :member_of :greybeards ;
+            :knows_shout :whirlwind_sprint ; :taught :ulfric , :dragonborn .
+:dragonborn a :Character , :Dovahkiin ; :race_of :nord ; :member_of :blades ;
+            :knows_shout :dragonrend .
+
+:alduin      a :Character ; :creature_of :dragon ; :knows_shout :fire_breath .
+:paarthurnax a :Character ; :creature_of :dragon ; :leader_of :greybeards ;
+             :knows_shout :fire_breath ; :taught :arngeir .
+:odahviing   a :Character ; :creature_of :dragon .
+
+:azura         a :Character ; :creature_of :daedra .
+:meridia       a :Character ; :creature_of :daedra .
+:molag_bal     a :Character ; :creature_of :daedra .
+:hermaeus_mora a :Character ; :creature_of :daedra .
+
+[] a owl:AllDifferent ;
+   owl:distinctMembers (
+     :nord :imperial :breton :redguard :altmer :dunmer :bosmer :orsimer :khajiit :argonian
+     :human :mer :beast
+     :living :dragon :undead :daedra :automaton
+     :stormcloaks :imperial_legion :blades :greybeards
+     :unrelenting_force :fire_breath :dragonrend :whirlwind_sprint
+     :ulfric :galmar :tullius :rikke :delphine :esbern :arngeir :dragonborn
+     :alduin :paarthurnax :odahviing :azura :meridia :molag_bal :hermaeus_mora ) .

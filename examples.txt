@@ -1,0 +1,36 @@
+race(khajiit).
+race_of(tullius, nord).
+leader_of(ulfric, stormcloaks).
+
+race_group(Race, mer).
+race_of(Name, nord).
+member_of(Name, blades).
+knows_shout(Name, fire_breath).
+
+// Все нормы в фракции Братья бури
+race_of(Name, nord), in_faction(Name, stormcloaks).
+
+// Все нечеловеческие расы
+race_group(Race, mer) ; race_group(Race, beast).
+
+// Все норды вне фракции Братьев Бури
+race_of(Name, nord), \+ in_faction(Name, stormcloaks).
+
+// Расы, к которым не относится ни один персонаж
+race(Race), \+ race_of(_, Race).
+
+// Все типы существ без персонажей
+creature_type(Type), \+ creature_kind(_, Type).
+
+// Несмертные вне всех фракций
+character(Name), \+ creature_kind(Name, living), \+ in_faction(Name, _).
+
+creature_kind(Name, dragon).
+creature_kind(Name, daedra).
+in_group(Name, human).
+allies(delphine, Name).
+enemies(ulfric, Name).
+voice_lineage(paarthurnax, Name).
+can_defeat_dragon(dragonborn, D).
+can_defeat_dragon(dragonborn, paarthurnax).
+creature_kind(Dragon, dragon), knows_shout(Dragon, _), \+ in_faction(Dragon, _).

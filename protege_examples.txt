@@ -1,0 +1,63 @@
+// все расы
+:Race
+// все фракции
+:Faction
+// Довакин
+:Dovahkiin
+// лидер Братьев Бури
+:leader_of value :stormcloaks
+// персонажи-имперцы
+:race_of value :imperial
+
+// эльфийские расы
+:race_group value :mer
+// все норды
+:race_of value :nord
+// члены Клинков
+:member_of value :blades
+// кто владеет Огненным дыханием
+:knows_shout value :fire_breath
+
+// норды среди Братьев Бури
+:race_of value :nord and :in_faction value :stormcloaks
+// не-человеческие расы
+:race_group value :mer or :race_group value :beast
+// драконы и даэдра
+:creature_kind value :dragon or :creature_kind value :daedra
+// все, кто не смертный
+:Character and not (:creature_kind value :living)
+// владеющие Голосом, кроме драконов
+:knows_shout some :Shout and not (:creature_kind value :dragon)
+
+// все смертные
+:creature_kind value :living
+// все даэдра
+:creature_kind value :daedra
+// персонажи-люди
+:in_group value :human
+// персонажи-эльфы (пусто)
+:in_group value :mer
+// все, кто связан с Клинками
+:in_faction value :blades
+// все, кто связан с Седобородыми
+:in_faction value :greybeards
+// враги Ульфрика
+:enemies value :ulfric
+// враги Рикке
+:enemies value :rikke
+// с кем воюет Имперский легион
+:at_war value :imperial_legion
+// наставники Довакина
+:voice_lineage value :dragonborn
+// ученики Партурнакса
+inverse :voice_lineage value :paarthurnax
+// кто может победить дракона
+:DragonSlayer
+// драконы, владеющие Голосом
+:creature_kind value :dragon and :knows_shout some :Shout
+
+// подклассы персонажа
+:Character
+
+// норды вне Братьев Бури
+:race_of value :nord and not (:in_faction value :stormcloaks)
